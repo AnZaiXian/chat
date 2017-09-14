@@ -1,0 +1,141 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>My WebSocket</title>
+    <meta charset="UTF-8">
+    <!--bootstrap的css样式-->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<style>
+    #right2{float:right}
+    #right1{float:right}
+</style>
+<body background="../img/601.bmp" style="width:1350px;height: 700px">
+<div  id="background" style="position:absolute;z-index:-1;width:100%;height:100%;top:0px;left:0px;">
+    <img src="../img/601.bmp" width="100%" height="100%"/>
+</div>
+<div id="content">
+    <button type="button" class="btn btn-default btn-xm " id="right2">Chating
+        <span class="glyphicon glyphicon-align-justify" ></span>
+    </button>
+    <!--class="panel panel-primary "-->
+    <div  style="width:750px;height: 350px"><!--class="panel-body bg-info"-->
+        <div  id="message">
+        </div>
+    </div>
+
+    <div style="width:750px;height: 350px" id="right1" style="padding-top: 100px;width: 500px">
+        <div class="input-group" >
+            <input type="text" class="form-control" id="text" >
+            <span class="input-group-btn">
+						<button id="post" class="btn btn-default" type="button" onclick="send()">
+							发送消息!
+						</button>
+
+					</span>
+        </div>
+
+    </div>
+
+    </content></div>
+
+
+
+
+
+<script type="text/javascript">
+    function myDivutil() {
+        var mainContainer = $('#message');
+        var div = mainContainer.find('.son-panel:last');
+        div.scrollTop(div);
+    }
+
+    $(document).ready(function(){
+
+        $("#text").keydown(function(e){
+
+            var curKey = e.which;
+
+            if(curKey == 13){
+
+                $("#post").click();
+                $("text").get(0).value='';
+                return false;
+
+            }
+
+        });
+
+    });
+    var websocket = null;
+
+    //判断当前浏览器是否支持WebSocket
+    if('WebSocket' in window){
+        websocket = new WebSocket("ws://169.254.88.211:4900/chat");
+    }
+    else{
+        alert('Not support websocket')
+    }
+
+    //连接发生错误的回调方法
+    websocket.onerror = function(){
+        setMessageInnerHTML("系统提示","建立连接失败");
+    };
+
+    //连接成功建立的回调方法
+    websocket.onopen = function(event){
+        setMessageInnerHTML("系统提示","连接成功");
+    }
+
+    //接收到消息的回调方法
+    websocket.onmessage = function(event){
+        setMessageInnerHTML("来自客服",event.data);
+    }
+
+    //连接关闭的回调方法
+    websocket.onclose = function(){
+        setMessageInnerHTML("系统提示","连接关闭");
+    }
+
+    //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+    window.onbeforeunload = function(){
+        websocket.close();
+    }
+
+    //收到消息，将消息显示在网页上
+    function setMessageInnerHTML(u,msg){
+        var div = document.getElementById('message');
+        div.innerHTML =
+            document.getElementById('message').innerHTML
+            +'<div class="son-panel" ><span  class="label label-info" style="font-size: 15px;">'
+            +'<span class="glyphicon glyphicon-user"></span>'+'<span>    '+msg+'</span></span></div>'+'<br/><br/>';
+        div.scrollTop = div.scrollHeight;
+        myDivutil();
+    }
+    function usersetMessageInnerHTML(u,msg){
+        var div = document.getElementById('message');
+        div.innerHTML =
+            div.innerHTML
+            +'<div class="son-panel" style="float: right;right: 3px;"><span  class="label label-info" style="font-size: 15px;">'
+            +msg+'&nbsp;&nbsp;&nbsp;'+'<span>'+' <span class="glyphicon glyphicon-check"></span>'+'</span></span></div>'+'<br/><br/>';
+        div.scrollTop = div.scrollHeight;
+        myDivutil();
+    }
+    //关闭连接
+    function closeWebSocket(){
+        websocket.close();
+    }
+
+    //发送消息
+    function send(){
+        var message = document.getElementById('text').value;
+        usersetMessageInnerHTML("我",message);
+        websocket.send(message);
+    }
+
+</script>
+
+</body>
+</html>
